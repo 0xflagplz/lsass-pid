@@ -1,16 +1,18 @@
+// source - https://www.mdsec.co.uk/2022/08/fourteen-ways-to-read-the-pid-for-the-local-security-authority-subsystem-service-lsass/
+
 #include <windows.h>
 #include <winsvc.h>  
 #include "beacon.h"
 #define WINBOOL int
 
-// gotta link these bad boys (api calls) for the BOF linker in the C2
+// Link API calls for the BOF linker 
 WINBASEAPI DWORD WINAPI KERNEL32$GetLastError(VOID);
 WINADVAPI SC_HANDLE WINAPI ADVAPI32$OpenSCManagerW(LPCWSTR lpMachineName, LPCWSTR lpDatabaseName, DWORD dwDesiredAccess);
 WINADVAPI WINBOOL WINAPI ADVAPI32$QueryServiceStatusEx(SC_HANDLE hService, SC_STATUS_TYPE InfoLevel, LPBYTE lpBuffer, DWORD cbBufSize, LPDWORD pcbBytesNeeded);
 WINADVAPI WINBOOL WINAPI ADVAPI32$CloseServiceHandle(SC_HANDLE hSCObject);
 WINADVAPI SC_HANDLE WINAPI ADVAPI32$OpenServiceW(SC_HANDLE hSCManager, LPCWSTR lpServiceName, DWORD dwDesiredAccess);
 
-// Query samss for LSA process ID
+// Query the 'samss' service for the LSA process ID
 DWORD GetLsaPidFromService(void) {
     SC_HANDLE              ManagerHandle = NULL, ServiceHandle = NULL;
     SERVICE_STATUS_PROCESS ProcessInfo;
@@ -20,8 +22,16 @@ DWORD GetLsaPidFromService(void) {
 
     do {
         // open the Service Control Manager
-        // SC_MANAGER_CONNECT - Service Control Manager object specific access types
-        //Expands to: 0x0001
+        // SC_MANAGER_CONNECT - Service Control Manager (SCM) is a windows predefined constant 
+        // From: winsvc.h
+        // SC_MANAGER_CONNECT             0x0001  // Connect to the SCM
+        // SC_MANAGER_CREATE_SERVICE      0x0002  // Create a service
+        // SC_MANAGER_ENUMERATE_SERVICE   0x0004  // Enumerate services
+        // SC_MANAGER_LOCK                0x0008  // Lock the SCM
+        // SC_MANAGER_QUERY_LOCK_STATUS   0x0010  // Query the lock status
+        // SC_MANAGER_MODIFY_BOOT_CONFIG  0x0020  // Modify the boot configuration
+        // SC_MANAGER_ALL_ACCESS          0xF003F // Bitwise OR of all permissions
+        
         ManagerHandle = ADVAPI32$OpenSCManagerW(NULL, NULL, SC_MANAGER_CONNECT);
 
         if (!ManagerHandle) {
