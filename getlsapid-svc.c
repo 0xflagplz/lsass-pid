@@ -73,6 +73,22 @@ DWORD GetLsaPidFromService(void) {
         }
         // since we directed the api QueryServiceStatusEx to use the location &ProcessInfo 
         // we can querythe specific parameter of dwProcessId for the processID
+        // ProcessID is type SERVICE_STATUS_PROCESS 
+        //
+        // SERVICE_STATUS_PROCESS Structure:
+        //
+        //
+        // typedef struct _SERVICE_STATUS_PROCESS {
+        //   DWORD dwServiceType;
+        //   DWORD dwCurrentState;
+        //   DWORD dwControlsAccepted;
+        //   DWORD dwWin32ExitCode;
+        //   DWORD dwServiceSpecificExitCode;
+        //   DWORD dwCheckPoint;
+        //   DWORD dwWaitHint;
+        //   DWORD dwProcessId; (what we want)
+        //   DWORD dwServiceFlags;
+        // } SERVICE_STATUS_PROCESS, *LPSERVICE_STATUS_PROCESS;
         ProcessId = ProcessInfo.dwProcessId;
     } while(FALSE);
 
