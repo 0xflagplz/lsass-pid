@@ -35,7 +35,7 @@ DWORD GetLsaPidFromService(void) {
         ManagerHandle = ADVAPI32$OpenSCManagerW(NULL, NULL, SC_MANAGER_CONNECT);
 
         if (!ManagerHandle) {
-            BeaconPrintf(CALLBACK_OUTPUT, "OpenSCManager() failed : %ld\n", KERNEL32$GetLastError());
+            BeaconPrintf(CALLBACK_ERROR, "OpenSCManager() failed : %ld\n", KERNEL32$GetLastError());
             break;
         }
         // open the samss service
@@ -47,14 +47,10 @@ DWORD GetLsaPidFromService(void) {
         //   [in] DWORD     dwDesiredAccess
         // );
 
-        ServiceHandle = ADVAPI32$OpenServiceW(
-                            ManagerHandle,
-                            L"samss",
-                            SERVICE_QUERY_STATUS
-                        );
+        ServiceHandle = ADVAPI32$OpenServiceW(ManagerHandle, L"samss", SERVICE_QUERY_STATUS);
 
         if (!ServiceHandle) {
-            BeaconPrintf(CALLBACK_OUTPUT, "OpenService() failed : %ld\n", KERNEL32$GetLastError());
+            BeaconPrintf(CALLBACK_ERROR, "OpenService() failed : %ld\n", KERNEL32$GetLastError());
             break;
         }
         // query the service status to get process information and save to memory location of ProcessInfo
@@ -69,16 +65,10 @@ DWORD GetLsaPidFromService(void) {
         // );
 
 
-        Result = ADVAPI32$QueryServiceStatusEx(
-                    ServiceHandle,
-                    SC_STATUS_PROCESS_INFO,
-                    (LPBYTE)&ProcessInfo,
-                    sizeof(ProcessInfo),
-                    &Length
-                );
+        Result = ADVAPI32$QueryServiceStatusEx(ServiceHandle, SC_STATUS_PROCESS_INFO, (LPBYTE)&ProcessInfo, sizeof(ProcessInfo), &Length);
 
         if (!Result) {
-            BeaconPrintf(CALLBACK_OUTPUT, "QueryServiceStatusEx() failed : %ld\n", KERNEL32$GetLastError());
+            BeaconPrintf(CALLBACK_ERROR, "QueryServiceStatusEx() failed : %ld\n", KERNEL32$GetLastError());
             break;
         }
         // since we directed the api QueryServiceStatusEx to use the location &ProcessInfo 
