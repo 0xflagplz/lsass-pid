@@ -20,6 +20,8 @@ DWORD GetLsaPidFromService(void) {
 
     do {
         // open the Service Control Manager
+        // SC_MANAGER_CONNECT - Service Control Manager object specific access types
+        //Expands to: 0x0001
         ManagerHandle = ADVAPI32$OpenSCManagerW(NULL, NULL, SC_MANAGER_CONNECT);
 
         if (!ManagerHandle) {
@@ -27,6 +29,14 @@ DWORD GetLsaPidFromService(void) {
             break;
         }
         // open the samss service
+        // for reference:
+        //
+        // SC_HANDLE OpenServiceW(
+        //   [in] SC_HANDLE hSCManager,
+        //   [in] LPCWSTR   lpServiceName,
+        //   [in] DWORD     dwDesiredAccess
+        // );
+
         ServiceHandle = ADVAPI32$OpenServiceW(
                             ManagerHandle,
                             L"samss",
@@ -75,6 +85,9 @@ DWORD GetLsaPidFromService(void) {
     if (ManagerHandle) {
         ADVAPI32$CloseServiceHandle(ManagerHandle);
     }
+
+
+    // BeaconPrintf is defined within beacon.h (several CALLBACK_X options for thee console to interpret the output)
 
     BeaconPrintf(CALLBACK_OUTPUT, "PID: %lu\n", ProcessId);
     
